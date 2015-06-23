@@ -22,12 +22,14 @@ module WashOut
             options[:to] ||= action.to_s
             action         = action.to_s.camelize
           end
-
         end
 
         default_response_tag = soap_config.camelize_wsdl ? 'Response' : '_response'
         default_response_tag = action+default_response_tag
 
+        default_response_tag = options[:return].name if options[:return].is_a?(Class) and options[:return].ancestors.include?(ActiveRecord::Base)
+        default_response_tag = options[:return].first.name.pluralize if options[:return].is_a? Array and options[:return].first.ancestors.include?(ActiveRecord::Base)
+        
         self.soap_actions[action] = options.merge(
           :in           => WashOut::Param.parse_def(soap_config, options[:args]),
           :out          => WashOut::Param.parse_def(soap_config, options[:return]),

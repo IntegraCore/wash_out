@@ -1,3 +1,8 @@
+# require 'active_support/inflector'
+# class String
+#   def demo
+#   include ActiveSupport::Inflector
+# end
 module WashOut
   class Param
     attr_accessor :raw_name
@@ -134,6 +139,10 @@ module WashOut
       raise RuntimeError, "[] should not be used in your params. Use nil if you want to mark empty set." if definition == []
       return [] if definition == nil
 
+      if WashOut.is_active_record_definition? definition
+        definition = parse_active_record_def(soap_config,definition)
+      end
+
       if definition.is_a?(Class) && definition.ancestors.include?(WashOut::Type)
         definition = definition.wash_out_param_map
       end
@@ -155,6 +164,23 @@ module WashOut
       else
         raise RuntimeError, "Wrong definition: #{definition.inspect}"
       end
+    end
+
+    def self.parse_active_record_def(soap_config,definition)
+      if definition.is_a? Array
+        first = definition.first
+        definition = {
+          first.name.pluralize.to_sym => WashOut::Param.new(soap_config, first.name.to_sym, WashOut.model_to_definition_hash(first), true)
+        }
+      elsif definition.is_a? NestedParam
+        definition = definition.to_param(soap_config)
+      else
+        definition = {
+          definition.name.to_sym => WashOut.model_to_definition_hash(definition)
+        }
+      end
+
+      return definition
     end
 
     def flat_copy

@@ -73,11 +73,27 @@ module WashOut
              :content_type => 'text/xml'
     end
 
+    def _render_active_record_hash result
+        model = Array(result).first.class
+        includes_hash = Hash[model.reflections.keys.collect{|x| [x.camelize,result.send(x).attributes]}] rescue {}
+
+        if result.is_a? ActiveRecord::Relation
+          result = { result.first.class.name.to_sym => result.collect{|x| x.attributes.merge(includes_hash)}}
+        else
+          result = { result.class.name.to_sym => result.attributes.merge(includes_hash)}
+        end
+
+    end
+
     # Render a SOAP response.
     def _render_soap(result, options)
       @namespace   = soap_config.namespace
       @operation   = soap_action = request.env['wash_out.soap_action']
       @action_spec = self.class.soap_actions[soap_action]
+
+      if WashOut.is_active_record_object? result
+        result = _render_active_record_hash result
+      end
 
       result = { 'value' => result } unless result.is_a? Hash
       result = HashWithIndifferentAccess.new(result)

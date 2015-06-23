@@ -10,6 +10,7 @@ require 'wash_out/type'
 require 'wash_out/model'
 require 'wash_out/wsse'
 require 'wash_out/middleware'
+require 'wash_out/nested_param'
 
 module ActionDispatch::Routing
   class Mapper
@@ -44,4 +45,36 @@ ActionController::Base.class_eval do
     include WashOut::SOAP
     self.soap_config = options
   end
+end
+
+module WashOut
+    def self.is_active_record_object? return_option
+      # return_option = return_option.first
+      return_value = Array(return_option).first
+      return return_value.is_a? ActiveRecord::Base
+    end
+
+    def self.is_active_record_definition? thing
+      thing = thing.first if thing.is_a? Array
+      return true if thing.is_a? NestedParam
+      return thing.any?{|x| is_active_record_class? x} if thing.is_a? Hash
+      return is_active_record_class? thing
+    end
+
+    def self.is_active_record_class? thing
+      return false unless thing.is_a? Class
+      return thing.ancestors.include? ActiveRecord::Base
+    end
+
+    def self.model_to_definition_hash model
+      Hash[model.columns.collect{|c| [c.name.to_sym,convert_type(c.type)] }]
+    end
+
+    def self.convert_type type
+      from = {
+        ntext: :string,
+        nvarchar: :string
+      }
+      from[type.to_sym] || type
+    end
 end
