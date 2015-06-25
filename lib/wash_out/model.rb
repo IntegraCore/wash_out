@@ -9,7 +9,8 @@ module WashOut
         :text      => :string,
         :float     => :double,
         :decimal   => :double,
-        :timestamp => :string
+        :timestamp => :string,
+        :ntext     => :string
       }
       map = {}
 
@@ -23,6 +24,7 @@ module WashOut
     end
 
     def wash_out_param_name(*args)
+      return name.camelize if args[0].camelize_wsdl == true
       return name.underscore
     end
   end

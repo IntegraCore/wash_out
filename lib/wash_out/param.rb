@@ -28,7 +28,7 @@ module WashOut
       elsif soap_config.camelize_wsdl
         @name = @name.camelize
       end
-
+# puts "Param.new - #{name}:\t #{type.to_s}"
       if type.is_a?(Symbol)
         @type = type.to_s
       elsif type.is_a?(Class)
@@ -136,6 +136,7 @@ module WashOut
     #
     # This function returns an array of WashOut::Param objects.
     def self.parse_def(soap_config, definition)
+# puts "parse_def:\t#{definition.pretty_inspect}"
       raise RuntimeError, "[] should not be used in your params. Use nil if you want to mark empty set." if definition == []
       return [] if definition == nil
 

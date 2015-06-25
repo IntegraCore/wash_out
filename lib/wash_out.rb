@@ -67,6 +67,7 @@ module WashOut
     end
 
     def self.model_to_definition_hash model
+      # puts "model definition_hash:\t#{Hash[model.columns.collect{|c| [c.name.to_sym,convert_type(c.type)] }].pretty_inspect}"
       Hash[model.columns.collect{|c| [c.name.to_sym,convert_type(c.type)] }]
     end
 
