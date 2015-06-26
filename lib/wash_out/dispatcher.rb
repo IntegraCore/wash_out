@@ -114,7 +114,9 @@ module WashOut
 
           value = data[param.raw_name]
 
-          unless value.nil?
+          if value.nil?
+            result_spec[i].value = 0 if param.type=='integer'
+          else
             if param.multiplied && !value.is_a?(Array)
               raise ProgrammerError,
                 "SOAP response tried to use '#{value.inspect}' " +
